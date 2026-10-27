@@ -1,9 +1,11 @@
+
 const express = require('express');
 const router = express.Router();
 const Student = require('../models/Student');
+const requireAuth = require('../middleware/auth');
 
-// GET all students
-router.get('/', async (req, res) => {
+// GET all students - requires a token
+router.get('/', requireAuth, async (req, res) => {
     try {
         const students = await Student.find();
         res.json(students);
@@ -12,7 +14,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST create a student
+// POST a new student
 router.post('/', async (req, res) => {
     try {
         const newStudent = await Student.create(req.body);
@@ -32,7 +34,9 @@ router.put('/:id', async (req, res) => {
         );
 
         if (!updatedStudent) {
-            return res.status(404).json({ error: 'Student not found' });
+            return res.status(404).json({
+                error: 'Student not found'
+            });
         }
 
         res.json(updatedStudent);
@@ -41,13 +45,17 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-// DELETE a student
-router.delete('/:id', async (req, res) => {
+// DELETE a student - requires a token
+router.delete('/:id', requireAuth, async (req, res) => {
     try {
-        const deletedStudent = await Student.findByIdAndDelete(req.params.id);
+        const deletedStudent = await Student.findByIdAndDelete(
+            req.params.id
+        );
 
         if (!deletedStudent) {
-            return res.status(404).json({ error: 'Student not found' });
+            return res.status(404).json({
+                error: 'Student not found'
+            });
         }
 
         res.json({
