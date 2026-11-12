@@ -5,19 +5,29 @@ const Student = require('../models/Student');
 const requireAuth = require('../middleware/auth');
 
 // GET all students - requires a token
+// Uses populate() with field selection
 router.get('/', requireAuth, async (req, res) => {
     try {
-        const students = await Student.find();
+        const students = await Student.find()
+            .populate('createdBy', 'email role');
+
         res.json(students);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// POST a new student
-router.post('/', async (req, res) => {
+// POST a new student - requires a token
+router.post('/', requireAuth, async (req, res) => {
     try {
-        const newStudent = await Student.create(req.body);
+        const newStudent = await Student.create({
+            name: req.body.name,
+            email: req.body.email,
+            age: req.body.age,
+            isActive: req.body.isActive,
+            createdBy: req.user.userId
+        });
+
         res.status(201).json(newStudent);
     } catch (err) {
         res.status(400).json({ error: err.message });
